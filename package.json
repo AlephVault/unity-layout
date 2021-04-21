@@ -4,7 +4,9 @@
   "displayName": "Aleph Vault - Unity - Layout",
   "description": "Layout helper classes to quickly manage components, both in GameObjects and inside some ScriptableObject settings.",
   "unity": "2018.1",
-  "dependencies": {},
+  "dependencies": {
+    "com.alephvault.unity.support": "0.0.1"
+  },
   "author": {
     "name": "Aleph Vault",
     "email": "info@alephvault.com",
