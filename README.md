@@ -1,5 +1,5 @@
 # unity-layout
-This project contains layout helper classes to quickly manage components, both in GameObjects and inside some ScriptableObject settings.
+This package contains layout helper classes to quickly manage components, both in GameObjects and inside some ScriptableObject settings.
 
 # Install
 To install this package you need to open the package manager in your project and:
