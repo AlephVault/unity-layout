@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using Object = UnityEngine.Object;
 
 namespace AlephVault.Unity.Layout
 {
@@ -90,64 +90,35 @@ namespace AlephVault.Unity.Layout
                 return GetDependencies(typeof(A), typeof(T));
             }
 
-            private static void CheckAssignability(Type attributeType, Type type, Type exceptionType)
+            private static void CheckAssignability(Type attributeType, Type exceptionType)
             {
                 if (!typeof(Depends).IsAssignableFrom(attributeType))
                 {
                     throwException(exceptionType, "Invalid attribute class / component class combination - attribute class must descend from AssetsLayout.Depends");
                 }
             }
-
-            /// <summary>
-            ///   Gets the dependencies of a given type, according to a given attribute type, and raising a particular exception on dependency error.
-            /// </summary>
-            /// <typeparam name="A">The attribute type. A subclass of <see cref="Depends"/>.</typeparam>
-            /// <typeparam name="E">The exception type. A subclass of <see cref="DependencyException"/>.</typeparam>
-            /// <param name="type">The type being queried.</param>
-            /// <returns>A set of types that are dependencies of the queried type.</returns>
-            public static HashSet<Type> GetDependencies<A, E>(Type type) where A : Attribute where E : DependencyException
-            {
-                Type attributeType = typeof(A);
-                Type exceptionType = typeof(E);
-                CheckAssignability(attributeType, type, exceptionType);
-                return GetDependencies(attributeType, type);
-            }
-
+            
             /// <summary>
             ///   Gets the dependencies of a given type, according to a given attribute type, and raising a <c>DependencyException</c> exception on dependency error.
             /// </summary>
             /// <typeparam name="A">The attribute type. A subclass of <see cref="Depends"/>.</typeparam>
             /// <param name="type">The type being queried.</param>
             /// <returns>A set of types that are dependencies of the queried type.</returns>
-            public static HashSet<Type> GetDependencies<A>(Type type) where A : Attribute
+            public static HashSet<Type> GetDependencies<A>(Type type) where A : Depends
             {
                 Type attributeType = typeof(A);
-                Type exceptionType = typeof(DependencyException);
-                CheckAssignability(attributeType, type, exceptionType);
                 return GetDependencies(attributeType, type);
             }
-
-            /// <summary>
-            ///   Gets the dependencies of a given component's type, according to a given attribute type, and raising a particular exception on dependency error.
-            /// </summary>
-            /// <typeparam name="A">The attribute type. A subclass of <see cref="Depends"/>.</typeparam>
-            /// <typeparam name="E">The exception type. A subclass of <see cref="DependencyException"/>.</typeparam>
-            /// <param name="component">The component whose type is being queried.</param>
-            /// <returns>A set of types that are dependencies of the queried type.</returns>
-            public static HashSet<Type> GetDependencies<A, E>(object component) where A : Attribute where E : DependencyException
-            {
-                return GetDependencies<A, E>(component.GetType());
-            }
-
+            
             /// <summary>
             ///   Gets the dependencies of a given component's type, according to a given attribute type, and raising a <c>DependencyException</c> exception on dependency error.
             /// </summary>
             /// <typeparam name="A">The attribute type. A subclass of <see cref="Depends"/>.</typeparam>
             /// <param name="component">The component whose type is being queried.</param>
             /// <returns>A set of types that are dependencies of the queried type.</returns>
-            public static HashSet<Type> GetDependencies<A>(object component) where A : Attribute
+            public static HashSet<Type> GetDependencies<A>(Object component) where A : Depends
             {
-                return GetDependencies<A, DependencyException>(component.GetType());
+                return GetDependencies<A>(component.GetType());
             }
 
             /// <summary>
@@ -159,7 +130,7 @@ namespace AlephVault.Unity.Layout
             /// <param name="components">The components to sort.</param>
             /// <param name="errorOnMissingDependency">If <c>true</c>, all the components' dependencies have to be present among them, or an error will be raised.</param>
             /// <returns>The sorted components list.</returns>
-            public static T[] FlattenDependencies<T, A, E>(T[] components, bool errorOnMissingDependency = true) where A : Depends where E : DependencyException
+            public static T[] FlattenDependencies<T, A, E>(T[] components, bool errorOnMissingDependency = true) where A : Depends where E : DependencyException where T : Object
             {
                 HashSet<Type> consideredComponentTypes = new HashSet<Type>(from component in components select component.GetType());
                 List<T> sourceComponentsList = new List<T>(components);
@@ -185,7 +156,7 @@ namespace AlephVault.Unity.Layout
                     foreach (var component in sourceComponentsList)
                     {
                         // Getting dependencies of the component.
-                        HashSet<Type> componentDependencies = GetDependencies<A, E>(component);
+                        HashSet<Type> componentDependencies = GetDependencies<A>(component);
                         if (errorOnMissingDependency && componentDependencies.Except(consideredComponentTypes).Count() > 0)
                         {
                             throwException(typeof(E), "At least one component has a dependency requirement not satisfied in the given input list");
@@ -222,7 +193,7 @@ namespace AlephVault.Unity.Layout
             /// <param name="components">The components to sort.</param>
             /// <param name="errorOnMissingDependency">If <c>true</c>, all the components' dependencies have to be present among them, or an error will be raised.</param>
             /// <returns>The sorted components list.</returns>
-            public static T[] FlattenDependencies<T, A>(T[] componentsList, bool errorOnMissingDependency = true) where A : Depends
+            public static T[] FlattenDependencies<T, A>(T[] componentsList, bool errorOnMissingDependency = true) where A : Depends where T : Object
             {
                 return FlattenDependencies<T, A, DependencyException>(componentsList, errorOnMissingDependency);
             }
@@ -236,7 +207,7 @@ namespace AlephVault.Unity.Layout
             /// <typeparam name="E">The exception to raise on error. A subclass of <see cref="DependencyException"/>.</typeparam>
             /// <param name="componentsList">The components to check.</param>
             /// <returns>The dictionary of components by their types.</returns>
-            public static Dictionary<Type, T> AvoidDuplicateDependencies<T, E>(T[] componentsList) where E : DependencyException
+            public static Dictionary<Type, T> AvoidDuplicateDependencies<T, E>(T[] componentsList) where E : DependencyException where T : Object
             {
                 Dictionary<Type, T> dictionary = new Dictionary<Type, T>();
                 foreach(T component in componentsList)
@@ -259,7 +230,7 @@ namespace AlephVault.Unity.Layout
             /// <typeparam name="T">The (common ancestor) type of components to pass.</typeparam>
             /// <param name="componentsList">The components to check.</param>
             /// <returns>The dictionary of components by their types.</returns>
-            public static Dictionary<Type, T> AvoidDuplicateDependencies<T>(T[] componentsList)
+            public static Dictionary<Type, T> AvoidDuplicateDependencies<T>(T[] componentsList) where T : Object
             {
                 return AvoidDuplicateDependencies<T, DependencyException>(componentsList);
             }
@@ -274,7 +245,7 @@ namespace AlephVault.Unity.Layout
             /// <typeparam name="E">The exception to raise. A subclass of <see cref="DependencyException"/>.</typeparam>
             /// <param name="componentsList">The main components that have dependencies.</param>
             /// <param name="dependencies">The components that satisfy those dependencies.</param>
-            public static void CrossCheckDependencies<TargetType, DependencyType, A, E>(TargetType[] componentsList, DependencyType[] dependencies) where A : Depends where E : DependencyException
+            public static void CrossCheckDependencies<TargetType, DependencyType, A, E>(TargetType[] componentsList, DependencyType[] dependencies) where A : Depends where E : DependencyException where TargetType : Object where DependencyType : Object
             {
                 HashSet<Type> requiredDependencies = new HashSet<Type>();
                 foreach (TargetType component in componentsList)
@@ -308,7 +279,7 @@ namespace AlephVault.Unity.Layout
             /// <typeparam name="A">The attribute type to consider. A subclass of <see cref="Depends"/>.</typeparam>
             /// <param name="componentsList">The main components that have dependencies.</param>
             /// <param name="dependencies">The components that satisfy those dependencies.</param>
-            public static void CrossCheckDependencies<TargetType, DependencyType, A>(TargetType[] componentsList, DependencyType[] dependencies) where A : Depends
+            public static void CrossCheckDependencies<TargetType, DependencyType, A>(TargetType[] componentsList, DependencyType[] dependencies) where A : Depends where TargetType : Object where DependencyType : Object
             {
                 CrossCheckDependencies<TargetType, DependencyType, A, DependencyException>(componentsList, dependencies);
             }
@@ -323,7 +294,7 @@ namespace AlephVault.Unity.Layout
             /// <typeparam name="E">The exception to raise. A subclass of <see cref="DependencyException"/>.</typeparam>
             /// <param name="componentsList">The main components that have dependencies.</param>
             /// <param name="dependency">The component that satisfy those dependencies.</param>
-            public static void CrossCheckDependencies<TargetType, DependencyType, A, E>(TargetType[] componentsList, DependencyType dependency) where A : Depends where E : DependencyException
+            public static void CrossCheckDependencies<TargetType, DependencyType, A, E>(TargetType[] componentsList, DependencyType dependency) where A : Depends where E : DependencyException where TargetType : Object where DependencyType : Object
             {
                 CrossCheckDependencies<TargetType, DependencyType, A, E>(componentsList, new DependencyType[] { dependency });
             }
@@ -337,7 +308,7 @@ namespace AlephVault.Unity.Layout
             /// <typeparam name="A">The attribute type to consider. A subclass of <see cref="Depends"/>.</typeparam>
             /// <param name="componentsList">The main components that have dependencies.</param>
             /// <param name="dependency">The component that satisfy those dependencies.</param>
-            public static void CrossCheckDependencies<TargetType, DependencyType, A>(TargetType[] componentsList, DependencyType dependency) where A : Depends
+            public static void CrossCheckDependencies<TargetType, DependencyType, A>(TargetType[] componentsList, DependencyType dependency) where A : Depends where TargetType : Object where DependencyType : Object
             {
                 CrossCheckDependencies<TargetType, DependencyType, A, DependencyException>(componentsList, dependency);
             }
@@ -352,7 +323,7 @@ namespace AlephVault.Unity.Layout
             /// <typeparam name="E">The exception to raise. A subclass of <see cref="DependencyException"/>.</typeparam>
             /// <param name="component">The main components that have dependencies.</param>
             /// <param name="dependencies">The component that satisfy those dependencies.</param>
-            public static void CrossCheckDependencies<TargetType, DependencyType, A, E>(TargetType component, DependencyType[] dependencies) where A : Depends where E : DependencyException
+            public static void CrossCheckDependencies<TargetType, DependencyType, A, E>(TargetType component, DependencyType[] dependencies) where A : Depends where E : DependencyException where TargetType : Object where DependencyType : Object
             {
                 CrossCheckDependencies<TargetType, DependencyType, A, E>(new TargetType[] { component }, dependencies);
             }
@@ -366,7 +337,7 @@ namespace AlephVault.Unity.Layout
             /// <typeparam name="A">The attribute type to consider. A subclass of <see cref="Depends"/>.</typeparam>
             /// <param name="component">The main components that have dependencies.</param>
             /// <param name="dependencies">The component that satisfy those dependencies.</param>
-            public static void CrossCheckDependencies<TargetType, DependencyType, A>(TargetType component, DependencyType[] dependencies) where A : Depends
+            public static void CrossCheckDependencies<TargetType, DependencyType, A>(TargetType component, DependencyType[] dependencies) where A : Depends where TargetType : Object where DependencyType : Object
             {
                 CrossCheckDependencies<TargetType, DependencyType, A, DependencyException>(component, dependencies);
             }
@@ -381,7 +352,7 @@ namespace AlephVault.Unity.Layout
             /// <typeparam name="E">The exception to raise. A subclass of <see cref="DependencyException"/>.</typeparam>
             /// <param name="component">The main components that have dependencies.</param>
             /// <param name="dependency">The component that satisfy those dependencies.</param>
-            public static void CrossCheckDependencies<TargetType, DependencyType, A, E>(TargetType component, DependencyType dependency) where A : Depends where E : DependencyException
+            public static void CrossCheckDependencies<TargetType, DependencyType, A, E>(TargetType component, DependencyType dependency) where A : Depends where E : DependencyException where TargetType : Object where DependencyType : Object
             {
                 CrossCheckDependencies<TargetType, DependencyType, A, E>(new TargetType[] { component }, new DependencyType[] { dependency });
             }
@@ -395,7 +366,7 @@ namespace AlephVault.Unity.Layout
             /// <typeparam name="A">The attribute type to consider. A subclass of <see cref="Depends"/>.</typeparam>
             /// <param name="component">The main components that have dependencies.</param>
             /// <param name="dependency">The component that satisfy those dependencies.</param>
-            public static void CrossCheckDependencies<TargetType, DependencyType, A>(TargetType component, DependencyType dependency) where A : Depends
+            public static void CrossCheckDependencies<TargetType, DependencyType, A>(TargetType component, DependencyType dependency) where A : Depends where TargetType : Object where DependencyType : Object
             {
                 CrossCheckDependencies<TargetType, DependencyType, A, DependencyException>(component, dependency);
             }
@@ -436,11 +407,11 @@ namespace AlephVault.Unity.Layout
             /// <typeparam name="E">The exception type. A subclass of <see cref="DependencyException"/>.</typeparam>
             /// <param name="component">The component to check against null.</param>
             /// <param name="fieldName">The field name. Just for informative purposes.</param>
-            public static void CheckPresence<T, E>(T component, string fieldName = "") where E : DependencyException
+            public static void CheckPresence<T, E>(T component, string fieldName = "") where E : MainComponentException
             {
                 if (component == null)
                 {
-                    fieldName = fieldName != "" ? fieldName : string.Format("[unspecified field of type {0}] is required: it must not be null", component.GetType().Name);
+                    fieldName = fieldName != "" ? fieldName : string.Format("[unspecified field of type {0}] is required: it must not be null", typeof(T).Name);
                     throwException(typeof(E), fieldName);
                 }
             }
@@ -454,7 +425,7 @@ namespace AlephVault.Unity.Layout
             /// <param name="fieldName">The field name. Just for informative purposes.</param>
             public static void CheckPresence<T>(T component, string fieldName = "")
             {
-                CheckPresence<T, DependencyException>(component);
+                CheckPresence<T, MainComponentException>(component);
             }
         }
     }
