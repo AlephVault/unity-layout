@@ -1,6 +1,6 @@
 {
   "name": "com.alephvault.unity.layout",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "displayName": "Aleph Vault - Unity - Layout",
   "description": "Layout helper classes to quickly manage components, both in GameObjects and inside some ScriptableObject settings.",
   "unity": "2018.1",
