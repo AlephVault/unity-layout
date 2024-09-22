@@ -72,7 +72,7 @@ namespace AlephVault.Unity.Layout
             /// </summary>
             /// <typeparam name="T">The type of component to require. It must be a subclass of <see cref="Component"/>.</typeparam>
             /// <param name="script">The behaviour. You will usually pass <c>this</c> here.</param>
-            /// <returns>The found component, casted as type <typeparamref name="T"/>.</returns>
+            /// <returns>The found component, cast as type <typeparamref name="T"/>.</returns>
             /// <exception cref="MissingParentException" />
             /// <exception cref="MissingComponentInParentException" />
             public static T RequireComponentInParent<T>(MonoBehaviour script) where T : Component
@@ -85,7 +85,7 @@ namespace AlephVault.Unity.Layout
             /// </summary>
             /// <typeparam name="T">The type of component to require. It must be a subclass of <see cref="Component"/>.</typeparam>
             /// <param name="current">The object. You will usually pass <c>this.gameObject</c> here.</param>
-            /// <returns>The found component, casted as type <typeparamref name="T"/>.</returns>
+            /// <returns>The found component, cast as type <typeparamref name="T"/>.</returns>
             /// <exception cref="MissingParentException" />
             /// <exception cref="MissingComponentInParentException" />
             public static T RequireComponentInParent<T>(GameObject current) where T : Component
@@ -114,12 +114,13 @@ namespace AlephVault.Unity.Layout
             ///   Requires a certain component among the children (or descendants) of this behaviour's game object.
             /// </summary>
             /// <typeparam name="T">The type of component to require. It must be a subclass of <see cref="Component"/>.</typeparam>
-            /// <param name="script">The behaviour. You will usually pass <c>this</c> here.</param>
-            /// <returns>The found component, casted as type <typeparamref name="T"/>.</returns>
+            /// <param name="current">The behaviour. You will usually pass <c>this</c> here.</param>
+            /// <param name="includeInactive">If set, also includes the inactive objects in the search</param>
+            /// <returns>The found component, cast as type <typeparamref name="T"/>.</returns>
             /// <exception cref="MissingComponentInChildrenException" />
-            public static T RequireComponentInChildren<T>(MonoBehaviour current) where T : Component
+            public static T RequireComponentInChildren<T>(MonoBehaviour current, bool includeInactive = true) where T : Component
             {
-                return RequireComponentInChildren<T>(current.gameObject);
+                return RequireComponentInChildren<T>(current.gameObject, includeInactive);
             }
 
             /// <summary>
@@ -127,11 +128,12 @@ namespace AlephVault.Unity.Layout
             /// </summary>
             /// <typeparam name="T">The type of component to require. It must be a subclass of <see cref="Component"/>.</typeparam>
             /// <param name="current">The object. You will usually pass <c>this.gameObject</c> here.</param>
-            /// <returns>The found component, casted as type <typeparamref name="T"/>.</returns>
+            /// <param name="includeInactive">If set, also includes the inactive objects in the search</param>
+            /// <returns>The found component, cast as type <typeparamref name="T"/>.</returns>
             /// <exception cref="MissingComponentInChildrenException" />
-            public static T RequireComponentInChildren<T>(GameObject current) where T : Component
+            public static T RequireComponentInChildren<T>(GameObject current, bool includeInactive = true) where T : Component
             {
-                T[] components = current.GetComponentsInChildren<T>(true);
+                T[] components = current.GetComponentsInChildren<T>(includeInactive);
                 if (components.Length == 0)
                 {
                     throw new MissingComponentInChildrenException("Current object's children must, at least, have one component of type " + typeof(T).FullName);
@@ -149,7 +151,7 @@ namespace AlephVault.Unity.Layout
             /// <param name="script">The behaviour. You will usually pass <c>this</c> here.</param>
             /// <param name="howMany">The minimum amount of components to retrieve. It is an error if there are less than that.</param>
             /// <param name="includeInactive">This argument has the same meaning as in <see cref="Component.GetComponentsInChildren(Type, bool)"/>.</param>
-            /// <returns>The found components, casted as type <typeparamref name="T"/>.</returns>
+            /// <returns>The found components, cast as type <typeparamref name="T"/>.</returns>
             /// <exception cref="MissingComponentInChildrenException" />
             public static T[] RequireComponentsInChildren<T>(MonoBehaviour script, uint howMany, bool includeInactive = true) where T : Component
             {
@@ -163,7 +165,7 @@ namespace AlephVault.Unity.Layout
             /// <param name="current">The object. You will usually pass <c>this.gameObject</c> here.</param>
             /// <param name="howMany">The minimum amount of components to retrieve. It is an error if there are less than that.</param>
             /// <param name="includeInactive">This argument has the same meaning as in <see cref="Component.GetComponentsInChildren(Type, bool)"/>.</param>
-            /// <returns>The found components, casted as type <typeparamref name="T"/>.</returns>
+            /// <returns>The found components, cast as type <typeparamref name="T"/>.</returns>
             /// <exception cref="MissingComponentInChildrenException" />
             public static T[] RequireComponentsInChildren<T>(GameObject current, uint howMany, bool includeInactive = true) where T : Component
             {
@@ -296,7 +298,7 @@ namespace AlephVault.Unity.Layout
             /// <remarks>
             ///   This considers component 1, 2, and 3 in each <see cref="RequireComponent"/> tag, and excludes <c>null</c>.
             /// </remarks>
-            /// <param name="C">The component type to query its dependencies.</typeparam>
+            /// <param name="componentType">The component type to query its dependencies.</param>
             /// <returns>A set of dependencies.</returns>
             private static HashSet<Type> GetDependencies(Type componentType)
             {
@@ -317,7 +319,7 @@ namespace AlephVault.Unity.Layout
             /// </summary>
             /// <remarks>An exception will be raised if there are circular dependencies here.</remarks>
             /// <param name="components">The components to sort by their dependencies.</param>
-            /// <exception cref="CircularDependencyUnsupportedException" />
+            /// <exception cref="CircularDependencyUnsupportedException" />public static T RequireComponentInParent<T>(MonoBehaviour script)
             /// <returns>An array of components (appropriately sorted from less-dependent to more-dependent).</returns>
             public static Component[] SortByDependencies(Component[] components)
             {
